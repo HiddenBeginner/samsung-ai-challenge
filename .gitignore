@@ -1,2 +1,8 @@
 /data/
+/outputs/
 /notebooks/
+/notebooks2/
+/openbabel-master/
+
+*/__pycache__/
+*/.ipynb_checkpoints/
