@@ -35,6 +35,19 @@ def main(args):
     full['y'] = full['S1_energy(eV)'] - full['T1_energy(eV)']
     full['folder'] = full['uid'].apply(lambda x: x.split('_')[0])
 
+    # Creating label encoder for atomic number
+    idx = 0
+    encoder = {}
+    for smiles in full['SMILES'].values:
+        m = Chem.MolFromSmiles(smiles)
+        m = Chem.AddHs(m)
+        for atom in m.GetAtoms():
+            if not atom.GetAtomicNum() in encoder.keys():
+                encoder[atom.GetAtomicNum()] = idx
+                idx += 1
+
+    print(encoder)
+
     if not os.path.exists(dir_output):
         os.makedirs(f'{dir_output}/train')
         os.mkdir(f'{dir_output}/dev')
@@ -42,7 +55,7 @@ def main(args):
 
     for i, row in full.iterrows():
         print(f'\r[{i+1} / {len(full)}] Done', end='')
-        data = row2data(row)
+        data = row2data(row, encoder)
 
         fpath = f'{dir_output}/{row.folder}/{row.uid}.pt'
         torch.save(data, fpath)

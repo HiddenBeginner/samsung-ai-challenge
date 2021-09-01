@@ -6,7 +6,7 @@ from torch_geometric.data import Data
 import rdkit.Chem as Chem
 
 
-def row2data(row, max_atoms=100):
+def row2data(row, encoder):
     smiles = row.SMILES
     y = row.y
     
@@ -15,9 +15,9 @@ def row2data(row, max_atoms=100):
     
     # Creating node feature vector
     num_nodes = len(list(m.GetAtoms()))
-    x = np.zeros((num_nodes, max_atoms))
+    x = np.zeros((num_nodes, len(encoder.keys())))
     for i in m.GetAtoms():
-        x[i.GetIdx(), i.GetAtomicNum()] = 1
+        x[i.GetIdx(), encoder[i.GetAtomicNum()]] = 1
     
     x = torch.from_numpy(x).float()
 

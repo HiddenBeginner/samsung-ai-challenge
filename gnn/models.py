@@ -12,7 +12,7 @@ class GCN(torch.nn.Module):
     ----------
     https://colab.research.google.com/drive/1I8a0DfQ3fI7Njc62__mVXUlcAleUclnb?usp=sharing
     """
-    def __init__(self, hidden_channels, num_node_features=100):
+    def __init__(self, hidden_channels, num_node_features=13):
         super(GCN, self).__init__()
         self.conv1 = GCNConv(num_node_features, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
