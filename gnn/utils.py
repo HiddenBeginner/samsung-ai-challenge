@@ -40,7 +40,7 @@ def row2data(row, encoder):
     y = torch.tensor([y]).float()
     
     # Wrapping all together
-    data = Data(x=x, edge_index=edge_index, y=y)
+    data = Data(x=x, edge_index=edge_index, y=y, uid=row.uid)
     
     return data
 

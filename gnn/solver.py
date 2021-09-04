@@ -10,10 +10,11 @@ class Solver:
         self.device = device
         self.n_epochs = n_epochs
         
-        self.criterion = torch.nn.MSELoss()
+        self.criterion = torch.nn.L1Loss()
         self.params = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = torch.optim.AdamW(self.params, lr=lr)
         self.model.to(self.device)
+        self.history = {'train_loss': [], 'valid_loss': [], 'dev_loss': []}
     
     def fit(self, train_loader, valid_loader, dev_loader):
         for epoch in range(self.n_epochs):
@@ -31,6 +32,9 @@ class Solver:
             message += f"Validation loss: {valid_loss.avg:.5f} | "
             message += f"Dev loss: {dev_loss.avg:.5f} |"
             print(message)
+            self.history['train_loss'].append(train_loss.avg)
+            self.history['valid_loss'].append(valid_loss.avg)
+            self.history['dev_loss'].append(dev_loss.avg)
              
     def train_one_epoch(self, loader):
         self.model.train()
