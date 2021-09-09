@@ -6,6 +6,9 @@ from torch_geometric.data import Data
 import rdkit.Chem as Chem
 
 
+BOND_TYPE_ENCODER = {1.0: 0, 2.0: 1, 1.5: 2, 3.0: 3}
+
+
 def row2data(row, encoder):
     smiles = row.SMILES
     y = row.y
@@ -25,6 +28,7 @@ def row2data(row, encoder):
     i = 0
     num_edges = 2 * len(list(m.GetBonds()))
     edge_index = np.zeros((2, num_edges), dtype=np.int64)
+    edge_type = np.zeros((num_edges, ), dtype=np.int64)
     for edge in m.GetBonds():
         u = min(edge.GetBeginAtomIdx(), edge.GetEndAtomIdx())
         v = max(edge.GetBeginAtomIdx(), edge.GetEndAtomIdx())
@@ -32,15 +36,17 @@ def row2data(row, encoder):
         edge_index[1, i] = v
         edge_index[0, i + 1] = v
         edge_index[1, i + 1] = u
+        edge_type[i] = BOND_TYPE_ENCODER[edge.GetBondTypeAsDouble()]
+        edge_type[i + 1] = BOND_TYPE_ENCODER[edge.GetBondTypeAsDouble()]
         i += 2
         
     edge_index = torch.from_numpy(edge_index)    
-    
+    edge_type = torch.from_numpy(edge_type)
     # Creating y
     y = torch.tensor([y]).float()
     
     # Wrapping all together
-    data = Data(x=x, edge_index=edge_index, y=y, uid=row.uid)
+    data = Data(x=x, edge_index=edge_index, edge_type=edge_type, y=y, uid=row.uid)
     
     return data
 
