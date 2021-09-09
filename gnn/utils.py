@@ -3,13 +3,11 @@ import numpy as np
 import torch
 from torch_geometric.data import Data
 
+import rdkit
 import rdkit.Chem as Chem
 
 
-BOND_TYPE_ENCODER = {1.0: 0, 2.0: 1, 1.5: 2, 3.0: 3}
-
-
-def row2data(row, encoder):
+def row2data(row, encoder_atom, encoder_bond_type, encoder_bond_stereo, encoder_bond_type_stereo):
     smiles = row.SMILES
     y = row.y
     
@@ -18,26 +16,32 @@ def row2data(row, encoder):
     
     # Creating node feature vector
     num_nodes = len(list(m.GetAtoms()))
-    x = np.zeros((num_nodes, len(encoder.keys())))
+    x = np.zeros((num_nodes, len(encoder_atom.keys())))
     for i in m.GetAtoms():
-        x[i.GetIdx(), encoder[i.GetAtomicNum()]] = 1
+        x[i.GetIdx(), encoder_atom[i.GetAtomicNum()]] = 1
     
     x = torch.from_numpy(x).float()
 
-    # Creating edge_index
+    # Creating edge_index and edge_type
     i = 0
     num_edges = 2 * len(list(m.GetBonds()))
     edge_index = np.zeros((2, num_edges), dtype=np.int64)
     edge_type = np.zeros((num_edges, ), dtype=np.int64)
     for edge in m.GetBonds():
+        # Getting bond information
         u = min(edge.GetBeginAtomIdx(), edge.GetEndAtomIdx())
         v = max(edge.GetBeginAtomIdx(), edge.GetEndAtomIdx())
+        bond_type = edge.GetBondTypeAsDouble()
+        bond_stereo = edge.GetStereo()
+        bond_label = encoder_bond_type_stereo[(bond_type, bond_stereo)]
+
+        # Storing information
         edge_index[0, i] = u
         edge_index[1, i] = v
         edge_index[0, i + 1] = v
         edge_index[1, i + 1] = u
-        edge_type[i] = BOND_TYPE_ENCODER[edge.GetBondTypeAsDouble()]
-        edge_type[i + 1] = BOND_TYPE_ENCODER[edge.GetBondTypeAsDouble()]
+        edge_type[i] = bond_label
+        edge_type[i + 1] = bond_label
         i += 2
         
     edge_index = torch.from_numpy(edge_index)    
