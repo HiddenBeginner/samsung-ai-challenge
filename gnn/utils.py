@@ -5,6 +5,7 @@ from torch_geometric.data import Data
 
 import rdkit
 import rdkit.Chem as Chem
+from rdkit.Chem import AllChem
 
 
 def row2data(row, encoder_atom, encoder_bond_type, encoder_bond_stereo, encoder_bond_type_stereo):

@@ -6,11 +6,12 @@ class SDFParser:
     """
     @staticmethod
     def parse_counts_line(s):
-        s = s[:-13]
-        s = [s[3 * i:3 * i + 3] for i in range(9)]
-        s = list(map(lambda x: int(x.strip()), s))
+        num_atoms = int(s[:3])
+        s = s[3:]
+        
+        num_bonds = int(s[:3])
 
-        return (s[0], s[1])
+        return (num_atoms, num_bonds)
     
     @staticmethod
     def parse_atoms_block(s):
@@ -38,6 +39,22 @@ class SDFParser:
 
         return (atom, coords  + [iso] + [chg] + remain)
     
+    @staticmethod
+    def parse_bonds_block(s):
+        u = int(s[:3].strip()) - 1
+        s = s[3:]
+        
+        v = int(s[:3].strip()) - 1
+        s = s[3:]
+        
+        bond_type = int(s[:3].strip())
+        s = s[3:]
+        
+        bond_stereo = int(s[:3].strip())
+        
+        return (u, v, bond_type, bond_stereo)
+        
+    
     def parse(self, lines):
         # Parsing the counts line
         count_line = lines[3]
@@ -48,7 +65,8 @@ class SDFParser:
         atoms_block = list(map(self.parse_atoms_block, atoms))
         
         # Parsing the bonds block and the properties will be added.
-        # bonds = lines[4 + n_atoms: 4 + n_atoms + n_bonds]
+        bonds = lines[4 + n_atoms: 4 + n_atoms + n_bonds]
+        bonds_block = list(map(self.parse_bonds_block, bonds))
         # remains = lines[4 + n_atoms + n_bonds:]
                            
-        return (n_atoms, n_bonds, atoms_block)
+        return (n_atoms, n_bonds, atoms_block, bonds_block)
