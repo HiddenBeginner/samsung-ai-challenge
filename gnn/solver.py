@@ -50,7 +50,7 @@ class RGCNSolver:
             data.to(self.device)
             
             self.optimizer.zero_grad()
-            y_pred = self.model(data.x, data.edge_index, data.edge_type, data.batch)
+            y_pred = self.model(data.x, data.edge_index, data.edge_type, data.features, data.batch)
             loss = self.criterion(y_pred, data.y.unsqueeze(1))
             loss.backward()
             self.optimizer.step()
@@ -68,7 +68,7 @@ class RGCNSolver:
             for step, data in enumerate(loader):
                 data.to(self.device)
                 
-                y_pred = self.model(data.x, data.edge_index, data.edge_type, data.batch)
+                y_pred = self.model(data.x, data.edge_index, data.edge_type, data.features, data.batch)
                 loss = self.criterion(y_pred, data.y.unsqueeze(1))
                 summary_loss.update(loss.detach().item(), data.num_graphs)
                 
