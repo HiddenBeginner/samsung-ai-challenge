@@ -1,11 +1,9 @@
 import numpy as np
-import gudhi as gd
 
 import torch
 from torch_geometric.data import Data
 
 from rdkit import Chem
-from descriptastorus.descriptors import rdNormalizedDescriptors  # For generating graph-level features
 
 
 def row2data(row, encoder_atom, encoder_bond_type, encoder_bond_stereo, encoder_bond_type_stereo):
@@ -48,10 +46,6 @@ def row2data(row, encoder_atom, encoder_bond_type, encoder_bond_stereo, encoder_
     edge_index = torch.from_numpy(edge_index)    
     edge_type = torch.from_numpy(edge_type)
 
-    # Generating graph-level features
-    features = generate_graph_level_features(smiles)
-    features = torch.tensor([features]).float()
-
     # Creating y
     y = torch.tensor([y]).float()
     
@@ -60,39 +54,11 @@ def row2data(row, encoder_atom, encoder_bond_type, encoder_bond_stereo, encoder_
         x=x, 
         edge_index=edge_index, 
         edge_type=edge_type,
-        features = features, 
         y=y, 
         uid=row.uid
     )
     
     return data
-
-
-def generate_graph_level_features(smiles):
-    """
-    reference
-    ----------
-    https://github.com/chemprop/chemprop/blob/9c8ff4074bd89b93f43a21adc49b458b0cab9e7f/chemprop/features/features_generators.py#L110
-    """
-    generator = rdNormalizedDescriptors.RDKit2DNormalized()
-    features = generator.process(smiles)[1:]
-    features = np.nan_to_num(features, 0)
-
-    return features
-
-
-def calculate_num_cycles(m):
-    """
-    Calculate the one dimensional betti number, which indicates the number of cycles (holes)
-    """
-    simplex_tree = gd.SimplexTree()
-    for bond in m.GetBonds():
-        u = bond.GetBeginAtomIdx()
-        v = bond.GetEndAtomIdx()
-        st.insert([u, v])  
-    st.compute_persistence(persistence_dim_max=True)
-    
-    return st.betti_numbers()[1]
 
 
 class AverageMeter:
