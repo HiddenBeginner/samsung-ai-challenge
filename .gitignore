@@ -2,7 +2,10 @@
 /outputs/
 /notebooks/
 /notebooks2/
+/__pycache__/
 /openbabel-master/
 
 */__pycache__/
 */.ipynb_checkpoints/
+
+*.csv
